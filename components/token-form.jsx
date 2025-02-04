@@ -11,6 +11,7 @@ import { Switch } from "./ui/switch"
 import { useForm } from "react-hook-form"
 import { clusterApiUrl, Connection } from "@solana/web3.js"
 import { useEffect, useState } from "react"
+import Swal from "sweetalert2"
 
 export function TokenForm({ tokenData, setTokenData, onNext }) {
   const { connected, publicKey, connect, disconnect, wallet } = useWallet();
@@ -23,6 +24,20 @@ export function TokenForm({ tokenData, setTokenData, onNext }) {
       revokeMintAuthority: true,
     },
   })
+
+  const validationBeforeNext = () => {
+    for (const key in tokenData) {
+      if (key !== 'revokeFreezeAuthority' && key !== 'revokeMintAuthority' && !tokenData[key]) {
+        return Swal.fire({
+          title: 'All fields must be filled!',
+          text: "Please fill all of the fields!",
+          icon: 'warning',
+          confirmButtonText: "Close"
+        })
+      }
+    }
+    onNext()
+  }
 
   const handleChange = (e) => {
     setTokenData({
@@ -48,7 +63,7 @@ export function TokenForm({ tokenData, setTokenData, onNext }) {
       <div className="flex justify-between items-center">
         <h2
           className="text-2xl font-bold bg-gradient-solana text-transparent bg-clip-text">Create Your Meme Token</h2>
-          <Badge variant="secondary">0.1 SOL</Badge>
+        <Badge variant="secondary">0.1 SOL</Badge>
       </div>
       <div className="flex justify-between items-center my-4">
         <h1>Your Balance: <Badge>{balance} SOL</Badge></h1>
@@ -62,7 +77,9 @@ export function TokenForm({ tokenData, setTokenData, onNext }) {
             placeholder="e.g., Doge Coin"
             value={tokenData.name}
             onChange={handleChange}
-            className="border-solana-purple/20 focus:border-solana-purple" />
+            className="border-solana-purple/20 focus:border-solana-purple"
+            required
+          />
         </div>
 
         <div className="space-y-2">
@@ -73,7 +90,9 @@ export function TokenForm({ tokenData, setTokenData, onNext }) {
             placeholder="e.g., DOGE"
             value={tokenData.symbol}
             onChange={handleChange}
-            className="border-solana-purple/20 focus:border-solana-purple" />
+            className="border-solana-purple/20 focus:border-solana-purple"
+            required
+          />
         </div>
 
         <div className="space-y-2">
@@ -84,7 +103,9 @@ export function TokenForm({ tokenData, setTokenData, onNext }) {
             placeholder="Tell us about your meme token"
             value={tokenData.description}
             onChange={handleChange}
-            className="border-solana-purple/20 focus:border-solana-purple" />
+            className="border-solana-purple/20 focus:border-solana-purple"
+            required
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -97,7 +118,9 @@ export function TokenForm({ tokenData, setTokenData, onNext }) {
               placeholder="e.g., 1000000"
               value={tokenData.supply}
               onChange={handleChange}
-              className="border-solana-purple/20 focus:border-solana-purple" />
+              className="border-solana-purple/20 focus:border-solana-purple"
+              required
+            />
           </div>
 
           <div className="space-y-2">
@@ -109,7 +132,9 @@ export function TokenForm({ tokenData, setTokenData, onNext }) {
               placeholder="9"
               value={tokenData.decimals}
               onChange={handleChange}
-              className="border-solana-purple/20 focus:border-solana-purple" />
+              className="border-solana-purple/20 focus:border-solana-purple"
+              required
+            />
           </div>
         </div>
 
@@ -117,7 +142,9 @@ export function TokenForm({ tokenData, setTokenData, onNext }) {
           <Label htmlFor="image">Token Image</Label>
           <ImageUpload
             value={tokenData.image}
-            onChange={(value) => setTokenData({ ...tokenData, image: value })} />
+            onChange={(value) => setTokenData({ ...tokenData, image: value })}
+            required
+          />
         </div>
 
         <div className="space-y-4 mt-4">
@@ -132,7 +159,6 @@ export function TokenForm({ tokenData, setTokenData, onNext }) {
               id="revokeFreezeAuthority"
               {...register("revokeFreezeAuthority")}
               defaultChecked={tokenData.revokeFreezeAuthority}
-              // onCheckedChange={(checked) => setValue("revokeFreezeAuthority", checked)}
               onCheckedChange={(checked) => setTokenData({ ...tokenData, revokeFreezeAuthority: checked })}
             />
           </div>
@@ -147,7 +173,6 @@ export function TokenForm({ tokenData, setTokenData, onNext }) {
               id="revokeMintAuthority"
               {...register("revokeMintAuthority")}
               defaultChecked={tokenData.revokeMintAuthority}
-              // onCheckedChange={(checked) => setValue("revokeMintAuthority", checked)}
               onCheckedChange={(checked) => setTokenData({ ...tokenData, revokeMintAuthority: checked })}
             />
           </div>
@@ -155,11 +180,12 @@ export function TokenForm({ tokenData, setTokenData, onNext }) {
 
         <Button
           type="button"
-          onClick={onNext}
+          onClick={validationBeforeNext}
           className="w-full bg-gradient-solana hover:opacity-90 transition-opacity">
           Next Step
         </Button>
       </form>
+
     </Card>)
   );
 }

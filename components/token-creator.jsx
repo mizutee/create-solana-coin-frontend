@@ -20,7 +20,7 @@ export function TokenCreator() {
     name: "",
     symbol: "",
     description: "",
-    supply: "",
+    supply: "1000000000",
     decimals: "9",
     image: "",
     revokeFreezeAuthority: true,

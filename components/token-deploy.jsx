@@ -31,7 +31,7 @@ export function TokenDeploy({ tokenData, setCurrentStep, onBack }) {
   const startDeployment = async () => {
     const { data } = await axios({
       method: "POST",
-      url: "http://localhost:8080/pay-fee",
+      url: "https://www.createsolanacoin.com/pay-fee",
       data: {
         publicKey: wallet.adapter.publicKey
       }
@@ -60,7 +60,7 @@ export function TokenDeploy({ tokenData, setCurrentStep, onBack }) {
       console.log(`Transaction: https://solscan.io/tx/${signature}?cluster=devnet`);
       setIsDeploying(true);
 
-      const responseCreateToken = await axios.post("http://localhost:8080/api/v1/create-token", {
+      const responseCreateToken = await axios.post("https://www.createsolanacoin.com/api/v1/create-token", {
         ...tokenData,
         code,
         publicKey: wallet.adapter.publicKey
@@ -157,11 +157,7 @@ export function TokenDeploy({ tokenData, setCurrentStep, onBack }) {
         </Button>
       </div>
     </Card>
-    {/* <DeploymentModal
-      isOpen={isDeploying}
-      onClose={() => setIsDeploying(false)}
-      tokenData={tokenData} /> */}
-    (<Dialog open={isDeploying} onOpenChange={() => setIsDeploying(false)}>
+    <Dialog open={isDeploying} onOpenChange={() => setIsDeploying(false)}>
       <DialogContent className="sm:max-w-2md p-0">
         <VisuallyHidden>
           <DialogTitle>
@@ -243,7 +239,7 @@ export function TokenDeploy({ tokenData, setCurrentStep, onBack }) {
           </div>
         )}
       </DialogContent>
-    </Dialog>)
+    </Dialog>
   </>);
 }
 
