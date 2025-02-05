@@ -29,80 +29,34 @@ export function TokenDeploy({ tokenData, setCurrentStep, onBack }) {
   }
 
   const startDeployment = async () => {
-    const { data } = await axios({
-      method: "POST",
-      url: "https://www.createsolanacoin.com/pay-fee",
-      data: {
-        publicKey: wallet.adapter.publicKey
-      }
-    })
-    const { transaction, code } = data;
-    const transactions = Transaction.from(Buffer.from(transaction, "base64"));
+    try {
+      const connection = new Connection("https://fittest-smart-shadow.solana-mainnet.quiknode.pro/72cf440b36fc0ff7c5ae92a46f6c5a66defabfc0/", "confirmed");
 
-    // Connect to Solana
-    const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
-
-    // Sign and send transaction
-    const signature = await wallet.adapter.sendTransaction(transactions, connection);
-
-    const latestBlockhash = await connection.getLatestBlockhash();
-    const confirmation = await connection.confirmTransaction({
-      signature,
-      blockhash: latestBlockhash.blockhash,
-      lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
-    }, "confirmed");
-
-    // Check transaction status
-    if (confirmation.value.err) {
-      console.error("Transaction failed:", confirmation.value.err);
-    } else {
-      // console.log("Transaction successful! ✅");
-      console.log(`Transaction: https://solscan.io/tx/${signature}?cluster=devnet`);
       setIsDeploying(true);
 
-      const responseCreateToken = await axios.post("https://www.createsolanacoin.com/api/v1/create-token", {
+      const responseCreateToken = await axios.post("https://createsolanacoin.com/api/v1/create-token", {
         ...tokenData,
-        code,
         publicKey: wallet.adapter.publicKey
       });
 
-      setTokenAddress(responseCreateToken?.data?.address);
+      const { serializedTransaction, mintKeypair } = responseCreateToken.data;
+
+      const transaction = Transaction.from(Buffer.from(serializedTransaction, 'base64'));
+
+      const signedTransaction = await wallet.adapter.sendTransaction(transaction, connection);
+      const latestBlockhash = await connection.getLatestBlockhash();
+      const confirmation = await connection.confirmTransaction({
+        signature: signedTransaction,
+        blockhash: latestBlockhash.blockhash,
+        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
+      }, "confirmed");
+
+      console.log("Transaction successful, signature:", confirmation);
+      setTokenAddress(mintKeypair);
       setCreated(true);
+    } catch (error) {
+      console.log('Error during transaction:', error);
     }
-
-    // const connection = new Connection(clusterApiUrl('devnet'), "confirmed");
-    // const transaction = new Transaction();
-    // const recepient = new PublicKey("BjzupgD9PYjksPDXez2r2TokDAf3EntZvSM9Y1dCE7zS");
-
-    // transaction.add(
-    //   SystemProgram.transfer({
-    //     fromPubkey: wallet.adapter.publicKey,
-    //     toPubkey: recepient,
-    //     lamports: 0.15 * 1e9
-    //   })
-    // );
-
-    // const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-    // transaction.recentBlockhash = blockhash;
-    // transaction.feePayer = wallet.adapter.publicKey;
-
-    // Send transaction (wallet handles signing)
-    // const signature = await wallet.adapter.sendTransaction(transaction, connection);
-
-    // // Wait for confirmation
-    // const confirmation = await connection.confirmTransaction(
-    //   { signature, blockhash, lastValidBlockHeight },
-    //   "confirmed"
-    // );
-
-    // if (confirmation.value.err) {
-    //   console.error("Transaction failed", confirmation.value.err);
-    //   return;
-    // }
-
-    // console.log("Transaction successful, signature:", signature);
-
-
   };
 
 
