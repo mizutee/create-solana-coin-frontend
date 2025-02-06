@@ -30,29 +30,29 @@ export function TokenDeploy({ tokenData, setCurrentStep, onBack }) {
 
   const startDeployment = async () => {
     try {
-      const connectionConfig = tokenData.network === 'mainnet' ? "https://fittest-smart-shadow.solana-mainnet.quiknode.pro/72cf440b36fc0ff7c5ae92a46f6c5a66defabfc0" : clusterApiUrl("devnet");
-      const connection = new Connection(connectionConfig, "confirmed");
+      const connectionConfig = tokenData.network === 'mainnet' ? "https://go.getblock.io/21bd3b7e1b6a44f4bb2333bb7511f934" : clusterApiUrl("devnet");
 
       setIsDeploying(true);
-
+      const connection = new Connection(connectionConfig, { commitment: "confirmed", disableRetryOnRateLimit: true, wsEndpoint: null });
+      const latestBlockhash = await connection.getLatestBlockhash("confirmed");
       const responseCreateToken = await axios.post("https://createsolanacoin.com/api/v1/create-token", {
         ...tokenData,
-        publicKey: wallet.adapter.publicKey
+        publicKey: wallet.adapter.publicKey,
+        blockHash: latestBlockhash.blockhash
       });
 
       const { serializedTransaction, mintKeypair } = responseCreateToken.data;
+      const transaction = Transaction.from(Buffer.from(serializedTransaction, "base64"));
 
-      const transaction = Transaction.from(Buffer.from(serializedTransaction, 'base64'));
+      const signedTransaction = await wallet.adapter.signTransaction(transaction);
+      const rawTransaction = signedTransaction.serialize();
+      const signature = await connection.sendRawTransaction(rawTransaction, {
+        skipPreflight: false,
+        preflightCommitment: "processed",
+        maxRetries: 3
+      });
 
-      const signedTransaction = await wallet.adapter.sendTransaction(transaction, connection);
-      const latestBlockhash = await connection.getLatestBlockhash();
-      const confirmation = await connection.confirmTransaction({
-        signature: signedTransaction,
-        blockhash: latestBlockhash.blockhash,
-        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
-      }, "confirmed");
-
-      console.log("Transaction successful, signature:", confirmation);
+      console.log("Transaction successful, signature:", signature);
       setTokenAddress(mintKeypair);
       setCreated(true);
     } catch (error) {
