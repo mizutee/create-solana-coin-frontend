@@ -13,7 +13,7 @@ export function WalletContextProvider({ children }) {
   const endpoint = useMemo(() => clusterApiUrl("mainnet-beta"), [])
 
   const wallets = useMemo(
-    () => [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
+    () => [new PhantomWalletAdapter()],
     []
   )
 

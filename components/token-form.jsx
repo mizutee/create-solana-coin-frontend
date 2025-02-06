@@ -16,6 +16,7 @@ import Swal from "sweetalert2"
 export function TokenForm({ tokenData, setTokenData, onNext }) {
   const { connected, publicKey, connect, disconnect, wallet } = useWallet();
   const [balance, setBalance] = useState(0);
+  const [devBalance, setDevBalance] = useState(0);
 
   const { register, handleSubmit, setValue, watch } = useForm({
     defaultValues: {
@@ -32,7 +33,10 @@ export function TokenForm({ tokenData, setTokenData, onNext }) {
           title: 'All fields must be filled!',
           text: "Please fill all of the fields!",
           icon: 'warning',
-          confirmButtonText: "Close"
+          confirmButtonText: "Close",
+          customClass: {
+            popup: 'bg-black text-white'
+          }
         })
       }
     }
@@ -46,12 +50,19 @@ export function TokenForm({ tokenData, setTokenData, onNext }) {
     })
   }
 
+  const toggleNetwork = () => {
+    setTokenData((prev) => ({...tokenData, network: prev.network === 'mainnet' ? 'devnet' : 'mainnet'}));
+  }
+
   useEffect(() => {
     const fetchBalance = async () => {
       if (connected && publicKey) {
-        const connection = new Connection("https://fittest-smart-shadow.solana-mainnet.quiknode.pro/72cf440b36fc0ff7c5ae92a46f6c5a66defabfc0/", "confirmed")
+        const connection = new Connection("https://fittest-smart-shadow.solana-mainnet.quiknode.pro/72cf440b36fc0ff7c5ae92a46f6c5a66defabfc0", "confirmed")
+        const devConnection = new Connection(clusterApiUrl("devnet"), "confirmed");
         const walletBalance = await connection.getBalance(publicKey)
+        const walletBalanceDev = await devConnection.getBalance(publicKey)
         setBalance(walletBalance / 1e9) // Convert from lamports to SOL
+        setDevBalance(walletBalanceDev / 1e9)
       }
     }
 
@@ -65,8 +76,12 @@ export function TokenForm({ tokenData, setTokenData, onNext }) {
           className="text-2xl font-bold bg-gradient-solana text-transparent bg-clip-text">Create Your Meme Token</h2>
         <Badge variant="secondary">0.1 SOL</Badge>
       </div>
-      <div className="flex justify-between items-center my-4">
-        <h1>Your Balance: <Badge>{balance} SOL</Badge></h1>
+      <div className="flex justify-between items-center my-2">
+        <h1>Your Balance: <Badge>{tokenData.network === 'mainnet' ? balance : devBalance} SOL</Badge></h1>
+        <Button variant="destructive" onClick={disconnect}>Disconnect Wallet</Button>
+      </div>
+      <div className="flex justify-between items-center my-2">
+        <h1>Change Network: <Badge variant={tokenData.network} onClick={toggleNetwork}>{tokenData.network}</Badge></h1>
       </div>
       <form className="space-y-4">
         <div className="space-y-2">

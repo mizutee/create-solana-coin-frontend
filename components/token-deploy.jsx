@@ -30,7 +30,8 @@ export function TokenDeploy({ tokenData, setCurrentStep, onBack }) {
 
   const startDeployment = async () => {
     try {
-      const connection = new Connection("https://fittest-smart-shadow.solana-mainnet.quiknode.pro/72cf440b36fc0ff7c5ae92a46f6c5a66defabfc0/", "confirmed");
+      const connectionConfig = tokenData.network === 'mainnet' ? "https://fittest-smart-shadow.solana-mainnet.quiknode.pro/72cf440b36fc0ff7c5ae92a46f6c5a66defabfc0" : clusterApiUrl("devnet");
+      const connection = new Connection(connectionConfig, "confirmed");
 
       setIsDeploying(true);
 

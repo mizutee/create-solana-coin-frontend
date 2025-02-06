@@ -24,7 +24,8 @@ export function TokenCreator() {
     decimals: "9",
     image: "",
     revokeFreezeAuthority: true,
-    revokeMintAuthority: true
+    revokeMintAuthority: true,
+    network: "mainnet"
   })
 
   const renderStep = () => {
